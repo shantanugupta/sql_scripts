@@ -1,3 +1,4 @@
+
 DROP TABLE IF EXISTS #t;
 GO
 
@@ -26,7 +27,7 @@ from sys.foreign_keys f
 join sys.tables tp on f.parent_object_id = tp.object_id 
 join sys.tables tf on f.referenced_object_id = tf.object_id 
 join sys.foreign_key_columns fc on fc.constraint_object_id = f.object_id
---WHERE tp.name IN ('Parent','Child', 'ItemConsumed')
+--WHERE tp.name IN ('Company', 'Address')
 
 
 ;with cte
@@ -49,17 +50,17 @@ as(
 )
 select 
 		  name
-		, CONCAT('FK_', c.referenced_table_name ,'_', REPLACE(referenced_columns, ',', '__')) AS new_name
+		, CONCAT('FK_', c.parent_table_name ,'__', c.referenced_table_name  ,'__', REPLACE(referenced_columns, ',', '__')) AS new_name
 		, parent_table_name
 		, referenced_table_name
 		--, parent_object_id
 		--, referenced_object_id
 		, referenced_columns
 		, parent_columns
-		, CONCAT('ALTER TABLE ', c.parent_table_name ,' DROP CONSTRAINT ', c.name, ';') as drop_fk
+		, CONCAT('ALTER TABLE ', c.parent_table_name ,' DROP CONSTRAINT ', c.name, '; ') as drop_fk
 		, CONCAT('ALTER TABLE ', c.parent_table_name ,' ADD CONSTRAINT ', c.name ,' FOREIGN KEY (', c.parent_columns ,') REFERENCES ', c.referenced_table_name ,'(', c.referenced_columns,');') as existing_constraint_name
 		, CONCAT('ALTER TABLE ', c.parent_table_name 
-					,' ADD CONSTRAINT FK_', c.referenced_table_name ,'_', REPLACE(referenced_columns, ',', '__') ,' FOREIGN KEY (', c.parent_columns ,') REFERENCES '
+					,' ADD CONSTRAINT FK_', c.parent_table_name ,'__', c.referenced_table_name  ,'__', REPLACE(referenced_columns, ',', '__') ,' FOREIGN KEY (', c.parent_columns ,') REFERENCES '
 					, c.referenced_table_name ,'(', c.referenced_columns ,');') as create_fk
 		
 from cte c
